@@ -1,8 +1,8 @@
 # LLM Reasoning as Trajectories: Step-Specific Representation Geometry and Correctness Signals
 
-[Lihao Sun](https://slhleosun.github.io/)&#185;, [Hang Dong](https://www.microsoft.com/en-us/research/people/hangdong/)&#185;, [Bo Qiao](https://www.microsoft.com/en-us/research/people/boqiao/)&#185;, [Qingwei Lin](https://www.microsoft.com/en-us/research/people/qlin/)&#185;, [Dongmei Zhang](https://www.microsoft.com/en-us/research/people/dongmeiz/)&#185;, [Saravan Rajmohan](https://www.microsoft.com/en-us/research/people/saravar/)&#185;
+[Lihao Sun](https://slhleosun.github.io/) &#185;, [Hang Dong](https://www.microsoft.com/en-us/research/people/hangdong/) &#185;, [Bo Qiao](https://www.microsoft.com/en-us/research/people/boqiao/) &#185;, [Qingwei Lin](https://www.microsoft.com/en-us/research/people/qlin/) &#185;, [Dongmei Zhang](https://www.microsoft.com/en-us/research/people/dongmeiz/) &#185;, [Saravan Rajmohan](https://www.microsoft.com/en-us/research/people/saravar/) &#185;
 
-&#185;Microsoft
+&#185; Microsoft
 
 [[Paper]](https://arxiv.org/abs/xxxx.xxxxx)
 
