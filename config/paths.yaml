@@ -1,0 +1,144 @@
+# Dataset and Model Configuration
+# This file stores the paths and configurations for datasets and models used in the reasoning trajectory project
+
+datasets:
+  gsm8k:
+    name: "GSM8K"
+    description: "Grade School Math 8K - Mathematical reasoning dataset"
+    path: null  # Will be auto-downloaded from HuggingFace
+    huggingface_id: "openai/gsm8k"
+    split:
+      train: "train"
+      test: "test"
+    cache_dir: null # "data/cache/gsm8k"
+
+  math-500:
+    name: "math-500"
+    description: "MATH-500"
+    path: null  # Will be auto-downloaded from HuggingFace
+    huggingface_id: "HuggingFaceH4/MATH-500"
+    split:
+      test: "test"
+    cache_dir: null # "data/cache/gsm8k"
+
+  # Add more datasets here as needed
+  # math:
+  #   name: "MATH"
+  #   description: "MATH dataset for mathematical reasoning"
+  #   path: "data/math"
+  #   huggingface_id: "hendrycks/math"
+  #   split:
+  #     train: "train"
+  #     test: "test"
+  #   cache_dir: "data/cache/math"
+
+models:
+  # llama-3.1-8b:
+  #   name: "Meta-Llama-3.1-8B"
+  #   description: "Meta Llama 3.1 8B base model"
+  #   model_type: "huggingface"
+  #   path: null  # Will be auto-downloaded from HuggingFace
+  #   huggingface_id: "meta-llama/Meta-Llama-3.1-8B"
+  #   cache_dir: "models/cache/llama-3.1-8b"
+  #   tokenizer_path: null  # Use same as model path if null
+
+  #   # Model-specific parameters
+  #   config:
+  #     max_length: 512
+  #     temperature: 0
+  #     top_p: 0.9
+  #     do_sample: true
+  #     use_cache: true
+  #     device_map: "auto"
+  #     torch_dtype: "float16"  # or "bfloat16", "float32"
+  #     load_in_8bit: false
+  #     load_in_4bit: false
+
+  llama-3.1-8b-instruct:
+    name: "Meta-Llama-3.1-8B-Instruct"
+    description: "Meta Llama 3.1 8B instruction-tuned model"
+    model_type: "huggingface"
+    path: null  # Will be auto-downloaded from HuggingFace
+    huggingface_id: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    cache_dir: null # "models/cache/llama-3.1-8b-instruct"
+    tokenizer_path: null
+
+    config:
+      max_length: 512
+      do_sample: false  # Deterministic greedy decoding
+      use_cache: true
+      device_map: "cuda"
+      torch_dtype: "float16"
+      load_in_8bit: false
+      load_in_4bit: false
+  
+  llama-3.1-8b:
+    name: "Meta-Llama-3.1-8B"
+    description: "Meta Llama 3.1 8B base model"
+    model_type: "huggingface"
+    path: null  # Will be auto-downloaded from HuggingFace
+    huggingface_id: "meta-llama/Meta-Llama-3.1-8B"
+    cache_dir: null # "models/cache/llama-3.1-8b-instruct"
+    tokenizer_path: null
+
+    config:
+      max_length: 512
+      do_sample: false  # Deterministic greedy decoding
+      use_cache: true
+      device_map: "cuda"
+      torch_dtype: "float16"
+      load_in_8bit: false
+      load_in_4bit: false
+
+  deepseek-r1-distill-llama-8b:
+    name: "DeepSeek-R1-Distill-Llama-8B"
+    description: "DeepSeek R1 distilled model based on Llama-8B"
+    model_type: "huggingface"
+    path: null  # Will be auto-downloaded from HuggingFace
+    huggingface_id: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    cache_dir: null
+    tokenizer_path: null
+
+    config:
+      max_length: 512
+      do_sample: false
+      use_cache: true
+      device_map: "auto"
+      torch_dtype: "bfloat16"
+      load_in_8bit: false
+      load_in_4bit: false
+      temperature: 0.0
+      top_p: 1.0
+      top_k: 1
+      repetition_penalty: 1.0
+
+
+  # Add more models here as needed
+  # gpt-4o:
+  #   name: "GPT-4o"
+  #   description: "OpenAI GPT-4o via CloudGPT"
+  #   model_type: "openai"
+  #   model_id: "gpt-4o-20241120"
+  #   config:
+  #     max_tokens: 4096
+  #     temperature: 0.7
+  #     top_p: 0.9
+
+# Output directories
+output:
+  results: "output/results"
+  trajectories: "output/trajectories"
+  checkpoints: "output/checkpoints"
+  logs: "output/logs"
+  cache: "output/cache"
+  complete_artifacts: "output/complete_artifacts"
+
+# General settings
+settings:
+  seed: 42
+  num_workers: 4
+  batch_size: 8
+  max_samples: null  # Set to null for all samples, or specify a number for debugging
+  verbose: true
+  use_gpu: true
+  mixed_precision: true
