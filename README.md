@@ -6,6 +6,10 @@
 
 [[Paper]](https://arxiv.org/abs/xxxx.xxxxx)
 
+[[Project Webpage]](https://slhleosun.github.io/reasoning_traj)
+
+Accepted to ACL 2026 Main Conference
+
 ### TL;DR 
 CoT reasoning in LLMs traces structured trajectories through representation space — step-specific regions become linearly separable with depth, late-step geometry predicts correctness, and trajectory-based steering enables both error correction and reasoning length control at inference time.
 
