@@ -6,16 +6,15 @@
 
 [[Paper]](https://arxiv.org/abs/xxxx.xxxxx)
 
-### TL;DR: Mathematical reasoning in LLMs traces structured trajectories through representation space — step-specific regions become linearly separable with depth, late-step geometry predicts correctness (ROC-AUC 0.87), and trajectory-based steering enables both error correction and reasoning length control at inference time.
+### TL;DR 
+CoT reasoning in LLMs traces structured trajectories through representation space — step-specific regions become linearly separable with depth, late-step geometry predicts correctness, and trajectory-based steering enables both error correction and reasoning length control at inference time.
 
 ## Overview
-
 Current large language models generate chain-of-thought (CoT) reasoning that can be viewed as a trajectory through representation space. We characterize this trajectory and find that it is highly structured: each reasoning step occupies a distinct, linearly separable region that becomes progressively more delineated at deeper layers. This organization is already present in base models — reasoning training primarily reshapes *when* convergence occurs rather than introducing new representational structure.
 
 Building on this, we show that correct and incorrect solutions follow similar early-step paths but diverge systematically at late steps, yielding actionable mid-reasoning correctness signals. We further introduce *trajectory-based steering*, an inference-time intervention framework that enables both error correction and reasoning length control without retraining.
 
 ![overview](figures/overview.png)
-<!-- Place Paper Figure 1 here (both panels: (a) t-SNE visualization + (b) linear probe accuracy curves) -->
 
 ## Using this directory
 
@@ -28,7 +27,6 @@ The codebase is organized into four main components matching the paper structure
 > :file_folder: Relevant files: `scripts/behavioral/`, `scripts/predictors/apply_linear_probes.py`, `scripts/predictors/train_stepwise_probes.py`
 
 ![step_specific](figures/step_specific.png)
-<!-- Place Paper Figure 1b here (layer-wise linear probe accuracy for Steps 2–5 and Final Answer Marker, across Instruct/R1-Distill/Base) -->
 
 We extract hidden-state activations at each `Step` marker during chain-of-thought reasoning and find a striking geometric structure:
 
@@ -41,7 +39,6 @@ We extract hidden-state activations at each `Step` marker during chain-of-though
 > :file_folder: Relevant files: `scripts/predictors/train_predictors.py`, `scripts/trajectories/`, `scripts/predictors/logprob_entropy_baseline.py`
 
 ![correctness](figures/correctness.png)
-<!-- Place Paper Figure 2 here (both panels: (a) between-step distance table + (b) mid-reasoning ROC-AUC prediction curves) -->
 
 We analyze the paths connecting successive reasoning steps and find a clear correctness signal:
 
@@ -66,7 +63,6 @@ We show that unconditional test-time scaling (always injecting control tokens) i
 > :file_folder: Relevant files: `scripts/steering/traj_based/`
 
 ![trajectory_steering](figures/trajectory_steering.png)
-<!-- Place Paper Figure 3a here (trajectory-based steering table: baseline vs. after intervention accuracy by step count) -->
 
 We introduce trajectory-based interventions that adaptively steer activations during generation based on deviation from an *ideal reasoning trajectory* derived from correct examples:
 
@@ -74,7 +70,6 @@ We introduce trajectory-based interventions that adaptively steer activations du
 - **Reasoning length control** via the termination subspace enables smooth, continuous adjustment of reasoning length with minimal accuracy impact (Fig 3b).
 
 ![length_control](figures/length_control.png)
-<!-- Place Paper Figure 3b here (both panels: reasoning length and number of steps vs. steering strength |α|) -->
 
 ### Cross-Task Generalization (Section 4.4)
 
