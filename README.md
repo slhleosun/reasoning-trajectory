@@ -4,7 +4,7 @@
 
 &#185; Microsoft
 
-[[Paper]](https://arxiv.org/abs/xxxx.xxxxx)
+[[Paper]](https://arxiv.org/abs/2604.05655)
 
 [[Project Webpage]](https://slhleosun.github.io/reasoning_traj)
 
