@@ -18,18 +18,12 @@ class WindowConfig:
     Args:
         step_token_id: Token ID to identify step markers (default: 8468 for "Step")
         rank_high_threshold: Threshold for high confidence rank (default: 10)
-                            rank ≤ threshold = High confidence
+                            rank <= threshold = High confidence
                             rank > threshold = Low confidence
-        percentiles: List of percentile points (0-100) to sample (DEPRECATED - kept for compatibility)
     """
 
     step_token_id: int = STEP_TOKEN_ID  # Token ID for "Step"
     rank_high_threshold: int = 10  # Threshold for trajectory classification
-    percentiles: List[int] = None  # DEPRECATED: kept for backwards compatibility
-
-    def __post_init__(self):
-        if self.percentiles is None:
-            self.percentiles = list(range(0, 101, 10))  # 0%, 10%, ..., 100% (for backwards compat)
 
 
 def find_step_token_positions(
@@ -62,43 +56,6 @@ def find_step_token_positions(
             step_positions.append(absolute_idx)
 
     return step_positions
-
-
-def compute_window_boundaries(
-    dp1_idx: int, dp2_idx: int, percentiles: List[int]
-) -> List[Tuple[int, int]]:
-    """DEPRECATED: Compute window boundaries over reasoning steps using percentiles
-
-    This function is kept for backwards compatibility but is no longer the primary method.
-    Use compute_step_boundaries() for step-based artifact capture.
-
-    Args:
-        dp1_idx: Start of reasoning
-        dp2_idx: Start of final answer
-        percentiles: List of percentiles (0-100)
-
-    Returns:
-        List of (start_idx, end_idx) tuples for each window
-
-    Note:
-        Each window is a SINGLE timestep at the percentile point.
-        This gives raw values at that specific moment (not aggregated statistics).
-    """
-    reasoning_length = dp2_idx - dp1_idx + 1
-
-    if reasoning_length <= 0:
-        return []
-
-    windows = []
-    for pct in percentiles:
-        # Calculate index at this percentile
-        step_idx = int(np.round(pct / 100.0 * (reasoning_length - 1)))
-        absolute_idx = dp1_idx + step_idx
-
-        # Single timestep window
-        windows.append((absolute_idx, absolute_idx + 1))
-
-    return windows
 
 
 def compute_step_boundaries(
@@ -281,7 +238,6 @@ def aggregate_window_features(
         # Top-p nucleus presence for gold token (raw values, if available)
         if artifact.top_p_presence_gold is not None:
             for p_value, indicators in artifact.top_p_presence_gold.items():
-                # e.g., "top_p_gold_0.5", "top_p_gold_0.9", etc.
                 feature_name = f"top_p_gold_{p_value}"
                 per_layer_features[feature_name] = {
                     f"layer_{i}": int(val)
@@ -291,7 +247,6 @@ def aggregate_window_features(
         # Top-p nucleus presence for "####" token (raw values, if available)
         if artifact.top_p_presence_final_answer is not None:
             for p_value, indicators in artifact.top_p_presence_final_answer.items():
-                # e.g., "top_p_final_answer_0.5", "top_p_final_answer_0.9", etc.
                 feature_name = f"top_p_final_answer_{p_value}"
                 per_layer_features[feature_name] = {
                     f"layer_{i}": int(val)
@@ -322,7 +277,7 @@ def compute_all_windows(
 ) -> Dict[str, Dict[str, Any]]:
     """Compute step-based artifact features for complete output
 
-    NEW BEHAVIOR: Aggregates artifacts over step ranges (from one "Step" token to the next).
+    Aggregates artifacts over step ranges (from one "Step" token to the next).
 
     Args:
         output: CompleteGenerationOutput
@@ -363,25 +318,23 @@ def classify_trajectory(
 ) -> Optional[str]:
     """Classify trajectory based on confidence patterns and correctness
 
-    NEW BEHAVIOR: Uses first and last STEP tokens instead of percentile windows.
-
     Classification based on rank confidence at first (step_0) and last (step_N) steps:
-    - High confidence: rank ∈ [1, rank_high_threshold]
+    - High confidence: rank in [1, rank_high_threshold]
     - Low confidence: rank > rank_high_threshold
 
     For CORRECT answers (2 categories based on produced answer pattern):
-    - correct_low_to_high: Prod Low→High (model gains confidence in correct answer)
-    - correct_high_to_high: Prod High→High (model stays confident in correct answer)
+    - correct_low_to_high: Prod Low->High (model gains confidence in correct answer)
+    - correct_high_to_high: Prod High->High (model stays confident in correct answer)
 
     For INCORRECT answers (8 bins based on prod and gold patterns):
-    - I1: Prod Low→High, Gold Low→High
-    - I2: Prod Low→High, Gold High→Low
-    - I3: Prod Low→High, Gold Low→Low
-    - I4: Prod Low→High, Gold High→High
-    - I5: Prod High→High, Gold Low→High
-    - I6: Prod High→High, Gold High→Low
-    - I7: Prod High→High, Gold Low→Low
-    - I8: Prod High→High, Gold High→High
+    - I1: Prod Low->High, Gold Low->High
+    - I2: Prod Low->High, Gold High->Low
+    - I3: Prod Low->High, Gold Low->Low
+    - I4: Prod Low->High, Gold High->High
+    - I5: Prod High->High, Gold Low->High
+    - I6: Prod High->High, Gold High->Low
+    - I7: Prod High->High, Gold Low->Low
+    - I8: Prod High->High, Gold High->High
 
     Args:
         windows: Step features (from compute_all_windows)
@@ -417,42 +370,37 @@ def classify_trajectory(
         return None
 
     # Determine confidence levels
-    # High if rank <= threshold, Low if rank > threshold
     prod_conf_first = "High" if prod_rank_first <= rank_high_threshold else "Low"
     prod_conf_last = "High" if prod_rank_last <= rank_high_threshold else "Low"
     gold_conf_first = "High" if gold_rank_first <= rank_high_threshold else "Low"
     gold_conf_last = "High" if gold_rank_last <= rank_high_threshold else "Low"
 
     # Determine trajectory patterns
-    prod_pattern = f"{prod_conf_first}→{prod_conf_last}"
-    gold_pattern = f"{gold_conf_first}→{gold_conf_last}"
+    prod_pattern = f"{prod_conf_first}->{prod_conf_last}"
+    gold_pattern = f"{gold_conf_first}->{gold_conf_last}"
 
     # Classification based on correctness
     if is_correct:
-        # For correct answers: only use produced answer pattern
-        if prod_pattern == "Low→High":
+        if prod_pattern == "Low->High":
             return "correct_low_to_high"
-        elif prod_pattern == "High→High":
+        elif prod_pattern == "High->High":
             return "correct_high_to_high"
         else:
-            # Handle other patterns (High→Low, Low→Low)
-            # Map them to the two categories based on final confidence
             if prod_conf_last == "High":
-                return "correct_high_to_high"  # Ends high
+                return "correct_high_to_high"
             else:
-                return "correct_low_to_high"  # Ends low (shouldn't happen for correct, but handle it)
+                return "correct_low_to_high"
     else:
         # For incorrect answers: use I1-I8 classification
-        # Format: (prod_pattern, gold_pattern) → bin
         trajectory_map = {
-            ("Low→High", "Low→High"): "I1",
-            ("Low→High", "High→Low"): "I2",
-            ("Low→High", "Low→Low"): "I3",
-            ("Low→High", "High→High"): "I4",
-            ("High→High", "Low→High"): "I5",
-            ("High→High", "High→Low"): "I6",
-            ("High→High", "Low→Low"): "I7",
-            ("High→High", "High→High"): "I8",
+            ("Low->High", "Low->High"): "I1",
+            ("Low->High", "High->Low"): "I2",
+            ("Low->High", "Low->Low"): "I3",
+            ("Low->High", "High->High"): "I4",
+            ("High->High", "Low->High"): "I5",
+            ("High->High", "High->Low"): "I6",
+            ("High->High", "Low->Low"): "I7",
+            ("High->High", "High->High"): "I8",
         }
 
         return trajectory_map.get((prod_pattern, gold_pattern))

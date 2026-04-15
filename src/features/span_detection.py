@@ -93,12 +93,12 @@ def extract_answer_after_hash(text: str) -> Optional[str]:
     6. FALLBACK: If no #### found OR extraction fails, extract last number from entire response
 
     Handles:
-    - Mathematical expressions: "#### 36 + 3 = 39" → "39"
-    - Comma-separated numbers: "#### 1,234" → "1234"
-    - Currency symbols: "#### $70" → "70"
-    - Negative numbers: "#### -42" → "-42"
-    - Spaces between digits: "#### 118 000" → "118000"
-    - Recursive operators: "#### 36 + 3 = 39 + 1 = 40" → "40"
+    - Mathematical expressions: "#### 36 + 3 = 39" -> "39"
+    - Comma-separated numbers: "#### 1,234" -> "1234"
+    - Currency symbols: "#### $70" -> "70"
+    - Negative numbers: "#### -42" -> "-42"
+    - Spaces between digits: "#### 118 000" -> "118000"
+    - Recursive operators: "#### 36 + 3 = 39 + 1 = 40" -> "40"
     - Fallback: If no ####, extracts last number from entire text
 
     Args:
@@ -125,7 +125,7 @@ def extract_answer_after_hash(text: str) -> Optional[str]:
         return extract_last_number(text)
 
     answer_text = parts[1].strip()
-    answer_text = re.sub(r'^[\$£€¥₹]+\s*', '', answer_text)
+    answer_text = re.sub(r'^[\$\u00a3\u20ac\u00a5\u20b9]+\s*', '', answer_text)
 
     # Find first number (handles spaces between digits, commas, negative numbers)
     first_number_match = re.search(r'(-?\d+(?:[\s,]\d+)*(?:\.\d+)?)', answer_text)
@@ -145,7 +145,7 @@ def extract_answer_after_hash(text: str) -> Optional[str]:
                 break
 
             result_text = equals_parts[1].strip()
-            result_text = re.sub(r'^[\$£€¥₹]+\s*', '', result_text)
+            result_text = re.sub(r'^[\$\u00a3\u20ac\u00a5\u20b9]+\s*', '', result_text)
             result_match = re.search(r'(-?\d+(?:[\s,]\d+)*(?:\.\d+)?)', result_text)
 
             if result_match:
@@ -222,9 +222,6 @@ def detect_dp2_index(
     prod_span = ids_of_append(prompt_ids, f" #### {produced_answer}", tokenizer)
 
     if not prod_span or len(prod_span) < 3:
-        import sys
-        print(f"[DP2 DETECTION] WARNING: Could not tokenize answer in context", flush=True)
-        sys.stdout.flush()
         return None
 
     # The answer token is typically at index 2 in the span:
@@ -258,19 +255,8 @@ def detect_dp2_index(
     if ans_start_rel is not None:
         # Convert relative index to absolute
         dp2_idx = (dp1_idx + 1) + ans_start_rel
-
-        # DEBUG: Log detection
-        import sys
-        print(f"[DP2 DETECTION] Found answer token '{produced_answer}' (id={prod_span[2]}) at dp2={dp2_idx}", flush=True)
-        if ans_start_rel > 0:
-            print(f"[DP2 DETECTION] Answer is {ans_start_rel} tokens into generation", flush=True)
-        sys.stdout.flush()
-
         return dp2_idx
     else:
-        import sys
-        print(f"[DP2 DETECTION] WARNING: Could not find answer token in generation", flush=True)
-        sys.stdout.flush()
         return None
 
 

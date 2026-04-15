@@ -3,7 +3,6 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from pathlib import Path
-import sys
 
 from .base import ModelAdapter, ModelOutput
 from ..config import get_model_config
@@ -375,21 +374,10 @@ class HuggingFaceAdapter(ModelAdapter):
         Returns:
             List of CompleteGenerationOutput with all artifacts
         """
-        import os
-        print(f"[ADAPTER PID={os.getpid()}] generate_batch_with_complete_artifacts called", flush=True)
-        print(f"[ADAPTER PID={os.getpid()}]   Batch size: {len(prompts)}", flush=True)
-        print(f"[ADAPTER PID={os.getpid()}]   Max new tokens: {max_new_tokens}", flush=True)
-        print(f"[ADAPTER PID={os.getpid()}]   Max input length: {max_input_length}", flush=True)
-        sys.stdout.flush()
-
         if not self.is_loaded:
             raise RuntimeError("Model not loaded. Call load() first.")
 
         try:
-            # Tokenize batch with left padding to fixed length
-            print(f"[ADAPTER PID={os.getpid()}] Tokenizing {len(prompts)} prompts with left padding (max_length={max_input_length})...", flush=True)
-            sys.stdout.flush()
-
             inputs = self._tokenizer(
                 prompts,
                 return_tensors="pt",
@@ -399,13 +387,6 @@ class HuggingFaceAdapter(ModelAdapter):
             )
             input_ids = inputs["input_ids"]
             attention_mask = inputs["attention_mask"]
-
-            print(f"[ADAPTER PID={os.getpid()}] Tokenization complete. Input shape: {input_ids.shape} (padded to {max_input_length})", flush=True)
-            sys.stdout.flush()
-
-            # Call two-pass batched greedy generation
-            print(f"[ADAPTER PID={os.getpid()}] Calling batch_greedy_generate_with_artifacts_twopass...", flush=True)
-            sys.stdout.flush()
 
             outputs = batch_greedy_generate_with_artifacts_twopass(
                 model=self._model,
@@ -418,18 +399,7 @@ class HuggingFaceAdapter(ModelAdapter):
                 pad_token_id=self._tokenizer.pad_token_id,
             )
 
-            print(f"[ADAPTER PID={os.getpid()}] batch_greedy_generate_with_artifacts_twopass returned {len(outputs)} outputs", flush=True)
-            sys.stdout.flush()
-
             return outputs
 
-        except Exception as e:
-            print(f"\n{'='*80}", flush=True)
-            print(f"❌❌❌ ERROR IN ADAPTER generate_batch_with_complete_artifacts ❌❌❌", flush=True)
-            print(f"PID={os.getpid()}", flush=True)
-            print(f"Error type: {type(e).__name__}", flush=True)
-            print(f"Error message: {e}", flush=True)
-            print(f"{'='*80}\n", flush=True)
-            sys.stdout.flush()
-            sys.stderr.flush()
+        except Exception:
             raise

@@ -376,9 +376,6 @@ def find_step_and_final_positions(
     final_token_id = final_token_ids[0] if final_token_ids else None
     space_final_token_id = space_final_token_ids[0] if space_final_token_ids else None
 
-    # Debug: Print token IDs being searched for
-    print(f"    DEBUG: Looking for 'Final' token IDs: {final_token_ids}, ' Final' token IDs: {space_final_token_ids}")
-
     final_token_position = None
     found_final_token = False
 
@@ -399,19 +396,12 @@ def find_step_and_final_positions(
             if final_answer_char_pos >= 0 and abs(decoded_char_len - final_answer_char_pos - len("Final")) < 20:
                 found_final_token = True
                 final_token_position = dp1_idx + 1 + token_idx
-                print(f"    DEBUG: ✓ Found 'Final' token at position {token_idx} (abs pos {final_token_position})")
-                print(f"    DEBUG: Decoded up to here ends with: ...{decoded_up_to_here[-100:]}")
                 break
 
     if final_token_position is None:
-        print(f"    DEBUG: ✗ Failed to find 'Final Answer:' token position")
-        print(f"    DEBUG: 'Final Answer:' char position in text: {final_answer_char_pos}")
-        print(f"    DEBUG: Found 'Final' token candidate: {found_final_token}")
-        print(f"    DEBUG: Number of step positions found: {len(step_token_positions)}")
         return None
 
     if len(step_token_positions) == 0:
-        print(f"    DEBUG: ✗ No step positions found (need at least one 'Step N:' pattern)")
         return None
 
     return {

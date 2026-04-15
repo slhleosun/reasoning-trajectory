@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 
 from .base import ModelAdapter
 from .huggingface import HuggingFaceAdapter
-from .openai_adapter import OpenAIAdapter
 from ..config import get_model_config
 
 
@@ -29,10 +28,8 @@ def get_model_adapter(
 
     if model_type == "huggingface":
         return HuggingFaceAdapter(model_name, config)
-    elif model_type == "openai":
-        return OpenAIAdapter(model_name, config)
     else:
         raise ValueError(
             f"Unsupported model type: {model_type}. "
-            f"Supported types: huggingface, openai"
+            f"Supported types: huggingface"
         )

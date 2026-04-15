@@ -114,15 +114,6 @@ models:
 
 
   # Add more models here as needed
-  # gpt-4o:
-  #   name: "GPT-4o"
-  #   description: "OpenAI GPT-4o via CloudGPT"
-  #   model_type: "openai"
-  #   model_id: "gpt-4o-20241120"
-  #   config:
-  #     max_tokens: 4096
-  #     temperature: 0.7
-  #     top_p: 0.9
 
 # Output directories
 output:
